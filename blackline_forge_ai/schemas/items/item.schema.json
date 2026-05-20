@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blacklineforge.ai/schemas/items/item.schema.json",
+  "title": "Blackline Forge Isolated Item",
+  "type": "object",
+  "required": ["schema_version","id","mode","item_name","item_type","category","gender_fit","description","style_axes","color_palette","material","wear_level","fivem","image_prompt"],
+  "properties": {
+    "schema_version": {"type":"string","pattern":"^1\\.1\\.0$"},
+    "id": {"type":"string"},
+    "mode": {"const":"single"},
+    "item_name": {"type":"string","minLength":3},
+    "item_type": {"enum":["top","bottom","outerwear","footwear","headwear","eyewear","mask","jewelry","bag","watch","glove","belt","hair","tattoo"]},
+    "category": {"enum":["clothing","accessory","hair","prop"]},
+    "gender_fit": {"enum":["male","female","unisex"]},
+    "description": {"type":"string","minLength":20},
+    "style_axes": {
+      "type":"object",
+      "required":["polish","volume","era","status","function","wear"],
+      "properties": {"polish":{"type":"integer","minimum":1,"maximum":10},"volume":{"type":"integer","minimum":1,"maximum":10},"era":{"type":"integer","minimum":1,"maximum":10},"status":{"type":"integer","minimum":1,"maximum":10},"function":{"type":"integer","minimum":1,"maximum":10},"wear":{"type":"integer","minimum":1,"maximum":10}}
+    },
+    "color_palette": {"type":"array","minItems":1,"maxItems":4},
+    "material": {"type":"string"},
+    "wear_level": {"enum":["clean","distressed","premium"]},
+    "fivem": {"type":"object"},
+    "image_prompt": {"type":"string","minLength":40}
+  }
+}

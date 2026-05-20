@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blacklineforge.ai/schemas/packs/pack.schema.json",
+  "title": "Blackline Forge Pack Manifest",
+  "type": "object",
+  "required": ["schema_version","pack_id","pack_name","mode","theme","style_spine","palette","composition","items","fivem"],
+  "properties": {
+    "schema_version": {"type":"string","pattern":"^1\\.1\\.0$"},
+    "pack_id": {"type":"string"},
+    "pack_name": {"type":"string"},
+    "mode": {"const":"pack"},
+    "theme": {"type":"object"},
+    "style_spine": {"type":"object"},
+    "palette": {"type":"object"},
+    "composition": {"type":"object"},
+    "items": {"type":"array","minItems":1},
+    "fivem": {"type":"object"}
+  }
+}

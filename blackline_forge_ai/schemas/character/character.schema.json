@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blacklineforge.ai/schemas/character/character.schema.json",
+  "title": "Blackline Forge Character Kit",
+  "type": "object",
+  "required": ["schema_version","character_id","mode","persona","equipped_items"],
+  "properties": {
+    "schema_version": {"type":"string","pattern":"^1\\.1\\.0$"},
+    "character_id": {"type":"string"},
+    "mode": {"const":"character"},
+    "persona": {"type":"object"},
+    "equipped_items": {"type":"array","minItems":3}
+  }
+}
