@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: blackline-forge-ai
+Version: 0.1.0
+Summary: Production-oriented specification bundle for generating FiveM/GTA roleplay fashion assets.
+Author: SVRYNCA
+License-Expression: LicenseRef-Proprietary
+Keywords: GTA,FiveM,validator,schema,ai,fashion
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
+# Blackline Forge AI
+
+Production-oriented specification bundle for generating FiveM/GTA roleplay fashion assets.
+
+## Included
+- JSON Schemas for isolated items, packs, and character-mode outputs.
+- Validator ruleset and Python reference validator.
+- Prompt pack for generator modes.
+- Registry assets (palettes, materials, blocklists, slot reference).
+- Pipeline state machine and examples.
+
+## Quick start
+```bash
+python3 blackline_forge_ai/validators/validator.py --gate generation --input blackline_forge_ai/examples/single/ashline_tactical_hoodie.json
+python3 blackline_forge_ai/validators/validator.py --gate import --input blackline_forge_ai/examples/packs/ashline_courier_01/pack.json
+```

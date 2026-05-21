@@ -1,0 +1,26 @@
+[project]
+name = "blackline-forge-ai"
+version = "0.1.0"
+description = "Production-oriented specification bundle for generating FiveM/GTA roleplay fashion assets."
+readme = "blackline_forge_ai/README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "SVRYNCA" }
+]
+license = "LicenseRef-Proprietary"
+license-files = ["LICENSE"]
+keywords = ["GTA", "FiveM", "validator", "schema", "ai", "fashion"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent"
+]
+[project.scripts]
+blackline-forge-validator = "blackline_forge_ai.validators.validator:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["blackline_forge_ai*"]
