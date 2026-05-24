@@ -1,29 +1,113 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import sys
 from pathlib import Path
 
-REQUIRED = ["id","item_name","item_type","category","gender_fit","description","style_axes","color_palette","material","wear_level","fivem","image_prompt"]
+RULESET_PATH = Path(__file__).with_name("validator.rules.json")
+SCHEMA_REQUIRED = {
+    "single": [
+        "schema_version",
+        "id",
+        "mode",
+        "item_name",
+        "item_type",
+        "category",
+        "gender_fit",
+        "description",
+        "style_axes",
+        "color_palette",
+        "material",
+        "wear_level",
+        "fivem",
+        "image_prompt",
+    ],
+    "pack": [
+        "schema_version",
+        "pack_id",
+        "pack_name",
+        "mode",
+        "theme",
+        "style_spine",
+        "palette",
+        "composition",
+        "items",
+        "fivem",
+    ],
+    "character": [
+        "schema_version",
+        "character_id",
+        "mode",
+        "persona",
+        "equipped_items",
+    ],
+}
 
-def validate_item(obj):
-    missing = [k for k in REQUIRED if k not in obj or obj[k] in (None, "", [])]
-    return missing
+
+def missing_fields(obj, required):
+    return [k for k in required if k not in obj or obj[k] in (None, "", [])]
+
+
+def load_allowed_gates():
+    try:
+        rules = json.loads(RULESET_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"generation", "import", "publish"}
+
+    gates = rules.get("gates", [])
+    if isinstance(gates, list) and all(isinstance(g, str) for g in gates) and gates:
+        return set(gates)
+    return {"generation", "import", "publish"}
+
+
+def report_and_exit(gate, violations):
+    passed = len(violations) == 0
+    print(json.dumps({"gate": gate, "passed": passed, "violations": violations}, indent=2))
+    sys.exit(0 if passed else 1)
+
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--gate", required=True)
-    p.add_argument("--input", required=True)
-    args = p.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--gate", required=True)
+    parser.add_argument("--input", required=True)
+    args = parser.parse_args()
 
-    data = json.loads(Path(args.input).read_text())
+    allowed_gates = load_allowed_gates()
     violations = []
+    if args.gate not in allowed_gates:
+        violations.append(
+            {
+                "rule": "BFA-000",
+                "error": f"unsupported gate '{args.gate}'",
+                "allowed_gates": sorted(allowed_gates),
+            }
+        )
+        report_and_exit(args.gate, violations)
 
-    if data.get("mode") == "single":
-        missing = validate_item(data)
+    try:
+        data = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as err:
+        violations.append({"rule": "BFA-000", "error": f"invalid input: {err}"})
+        report_and_exit(args.gate, violations)
+
+    mode = data.get("mode")
+    required = SCHEMA_REQUIRED.get(mode)
+
+    if required is None:
+        violations.append(
+            {
+                "rule": "BFA-000",
+                "error": f"unsupported mode '{mode}'",
+                "allowed_modes": sorted(SCHEMA_REQUIRED.keys()),
+            }
+        )
+    else:
+        missing = missing_fields(data, required)
         if missing:
-            violations.append({"rule":"BFA-001","missing":missing})
+            violations.append({"rule": "BFA-001", "mode": mode, "missing": missing})
 
-    print(json.dumps({"gate": args.gate, "passed": len(violations) == 0, "violations": violations}, indent=2))
+    report_and_exit(args.gate, violations)
+
 
 if __name__ == "__main__":
     main()
