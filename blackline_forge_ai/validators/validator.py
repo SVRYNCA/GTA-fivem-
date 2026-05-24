@@ -4,6 +4,7 @@ import json
 import sys
 from pathlib import Path
 
+ALLOWED_GATES = {"generation", "import", "publish"}
 SCHEMA_REQUIRED = {
     "single": [
         "schema_version",
@@ -47,6 +48,12 @@ def missing_fields(obj, required):
     return [k for k in required if k not in obj or obj[k] in (None, "", [])]
 
 
+def report_and_exit(gate, violations):
+    passed = len(violations) == 0
+    print(json.dumps({"gate": gate, "passed": passed, "violations": violations}, indent=2))
+    sys.exit(0 if passed else 1)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gate", required=True)
@@ -54,16 +61,21 @@ def main():
     args = parser.parse_args()
 
     violations = []
+    if args.gate not in ALLOWED_GATES:
+        violations.append(
+            {
+                "rule": "BFA-000",
+                "error": f"unsupported gate '{args.gate}'",
+                "allowed_gates": sorted(ALLOWED_GATES),
+            }
+        )
+        report_and_exit(args.gate, violations)
+
     try:
-        data = json.loads(Path(args.input).read_text())
+        data = json.loads(Path(args.input).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as err:
         violations.append({"rule": "BFA-000", "error": f"invalid input: {err}"})
-        print(
-            json.dumps(
-                {"gate": args.gate, "passed": False, "violations": violations}, indent=2
-            )
-        )
-        sys.exit(1)
+        report_and_exit(args.gate, violations)
 
     mode = data.get("mode")
     required = SCHEMA_REQUIRED.get(mode)
@@ -81,9 +93,7 @@ def main():
         if missing:
             violations.append({"rule": "BFA-001", "mode": mode, "missing": missing})
 
-    passed = len(violations) == 0
-    print(json.dumps({"gate": args.gate, "passed": passed, "violations": violations}, indent=2))
-    sys.exit(0 if passed else 1)
+    report_and_exit(args.gate, violations)
 
 
 if __name__ == "__main__":
