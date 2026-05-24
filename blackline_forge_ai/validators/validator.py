@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-ALLOWED_GATES = {"generation", "import", "publish"}
+RULESET_PATH = Path(__file__).with_name("validator.rules.json")
 SCHEMA_REQUIRED = {
     "single": [
         "schema_version",
@@ -48,6 +48,18 @@ def missing_fields(obj, required):
     return [k for k in required if k not in obj or obj[k] in (None, "", [])]
 
 
+def load_allowed_gates():
+    try:
+        rules = json.loads(RULESET_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"generation", "import", "publish"}
+
+    gates = rules.get("gates", [])
+    if isinstance(gates, list) and all(isinstance(g, str) for g in gates) and gates:
+        return set(gates)
+    return {"generation", "import", "publish"}
+
+
 def report_and_exit(gate, violations):
     passed = len(violations) == 0
     print(json.dumps({"gate": gate, "passed": passed, "violations": violations}, indent=2))
@@ -60,13 +72,14 @@ def main():
     parser.add_argument("--input", required=True)
     args = parser.parse_args()
 
+    allowed_gates = load_allowed_gates()
     violations = []
-    if args.gate not in ALLOWED_GATES:
+    if args.gate not in allowed_gates:
         violations.append(
             {
                 "rule": "BFA-000",
                 "error": f"unsupported gate '{args.gate}'",
-                "allowed_gates": sorted(ALLOWED_GATES),
+                "allowed_gates": sorted(allowed_gates),
             }
         )
         report_and_exit(args.gate, violations)
